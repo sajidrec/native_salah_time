@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/full_row_id"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/rounded_corners_bg_white"
+    android:clickable="true"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:padding="@dimen/spacing_sm">
@@ -20,8 +22,8 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:layout_marginHorizontal="@dimen/spacing_sm"
+        android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical">
 

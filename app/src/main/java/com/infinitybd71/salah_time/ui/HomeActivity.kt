@@ -1,5 +1,7 @@
 package com.infinitybd71.salah_time.ui
 
+import android.app.DatePickerDialog
+import android.icu.util.Calendar
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +10,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.infinitybd71.salah_time.R
 import com.infinitybd71.salah_time.databinding.ActivityHomeBinding
 import com.infinitybd71.salah_time.ui.components.setup
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class HomeActivity : AppCompatActivity() {
 
@@ -62,5 +66,27 @@ class HomeActivity : AppCompatActivity() {
             time = "4:38 AM",
             isNext = false
         )
+
+        val selectedDate = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("EEEE, dd MMMM", Locale.ENGLISH)
+
+        binding.dateRow.title.text = dateFormat.format(selectedDate.time)
+        binding.dateRow.subtitle.text = selectedDate.get(Calendar.YEAR).toString()
+
+        binding.dateRow.fullRowId.setOnClickListener {
+            DatePickerDialog(
+                this,
+                { _, year, month, day ->
+                    selectedDate.set(year, month, day)
+
+                    binding.dateRow.title.text =
+                        dateFormat.format(selectedDate.time)
+                    binding.dateRow.subtitle.text = year.toString()
+                },
+                selectedDate.get(Calendar.YEAR),
+                selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
     }
 }
