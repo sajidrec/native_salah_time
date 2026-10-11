@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:backgroundTint="@color/background"
+    tools:context=".ui.HomeActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/cardview_default_elevation"
+        android:padding="@dimen/screen_padding"
+        app:title="@string/salah_time">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_setting"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:contentDescription="@string/settings"
+            android:fontFamily="@font/material_icon"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="settings"
+            android:textAllCaps="false"
+            android:textColor="@color/black"
+            android:textSize="@dimen/icon_default" />
+
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/appbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_margin="@dimen/spacing_sm"
+            android:background="@color/background"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/location_row"
+                layout="@layout/view_info_row" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <include
+                android:id="@+id/date_row"
+                layout="@layout/view_info_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_corners_bg_primary"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_lg">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="next prayer"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="@dimen/text_body" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dhuhr"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textFontWeight="500"
+                    android:textSize="@dimen/text_prayer_name" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="11:11 AM"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_prayer_time" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Today's Prayer"
+                android:textFontWeight="500" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="8dp" />
+
+            <include
+                android:id="@+id/fajr"
+                layout="@layout/item_prayer" />
+
+            <include
+                android:id="@+id/dhuhr"
+                layout="@layout/item_prayer" />
+
+            <include
+                android:id="@+id/asr"
+                layout="@layout/item_prayer" />
+
+            <include
+                android:id="@+id/magrib"
+                layout="@layout/item_prayer" />
+
+            <include
+                android:id="@+id/esha"
+                layout="@layout/item_prayer" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="22dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+</RelativeLayout>

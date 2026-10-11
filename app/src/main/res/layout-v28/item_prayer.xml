@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/prayer_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_corners_bg_white"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_lg">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/wakth_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fajr"
+                android:textFontWeight="600"
+                android:textSize="@dimen/text_body" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/next_salah"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/next"
+                android:textFontWeight="500"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:visibility="invisible" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="0.2" />
+
+            <TextView
+                android:id="@+id/wakth_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4:38 AM" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/notification_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/material_icon"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="@dimen/spacing_sm"
+                android:text="notifications"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/icon_default"
+                app:backgroundTint="@android:color/transparent" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text sizes -->
+    <dimen name="text_caption">12sp</dimen>
+    <dimen name="text_small">14sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="text_section_title">18sp</dimen>
+    <dimen name="text_toolbar_title">24sp</dimen>
+    <dimen name="text_prayer_name">28sp</dimen>
+    <dimen name="text_prayer_time">36sp</dimen>
+
+    <!-- Spacing: padding and margins -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">16dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+    <dimen name="spacing_xxl">32dp</dimen>
+
+    <!-- Icons -->
+    <dimen name="icon_small">20dp</dimen>
+    <dimen name="icon_default">24dp</dimen>
+
+    <!-- Components -->
+    <dimen name="screen_padding">16dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="button_corner_radius">12dp</dimen>
+    <dimen name="touch_target_min">48dp</dimen>
+    <dimen name="prayer_row_min_height">56dp</dimen>
+    <dimen name="divider_height">1dp</dimen>
+</resources>
