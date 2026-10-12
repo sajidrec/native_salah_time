@@ -1,6 +1,7 @@
 package com.infinitybd71.salah_time.ui
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -87,6 +88,11 @@ class HomeActivity : AppCompatActivity() {
                 selectedDate.get(Calendar.MONTH),
                 selectedDate.get(Calendar.DAY_OF_MONTH)
             ).show()
+        }
+
+        binding.locationRow.fullRowId.setOnClickListener {
+            val intent = Intent(this@HomeActivity, LocationActivity::class.java)
+            startActivity(intent)
         }
     }
 }

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".ui.LocationActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/cardview_default_elevation"
+        android:padding="@dimen/screen_padding"
+        app:navigationContentDescription="Navigate back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="Location" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/appbar"
+        android:padding="@dimen/spacing_sm">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_corners_bg_primary"
+                android:text="@string/use_current_location"
+                android:textAllCaps="true"
+                app:backgroundTint="@color/primary" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/spacing_sm" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal">
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    app:dividerColor="@color/icon_secondary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="@dimen/spacing_sm"
+                    android:layout_marginRight="@dimen/spacing_sm"
+                    android:text="@string/or" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    app:dividerColor="@color/icon_secondary" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/spacing_sm" />
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_corners_bg_white"
+                android:drawableStart="@drawable/ic_search"
+                android:hint="@string/search_city_by_name"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:maxLines="1"
+                android:padding="@dimen/spacing_sm"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_body" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/spacing_sm" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+</RelativeLayout>
