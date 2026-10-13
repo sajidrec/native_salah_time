@@ -1,23 +1,40 @@
 package com.infinitybd71.salah_time.ui
 
+import android.Manifest
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.infinitybd71.salah_time.R
 import com.infinitybd71.salah_time.databinding.ActivityLocationBinding
 import androidx.lifecycle.lifecycleScope
+import com.infinitybd71.salah_time.data.CitiesRepository
+import com.infinitybd71.salah_time.data.DeviceLocationProvider
+import com.infinitybd71.salah_time.data.DeviceLocationResult
+import com.infinitybd71.salah_time.data.LocationPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
 
 class LocationActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityLocationBinding
+    private lateinit var locationPrefs: LocationPrefs
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants.values.any { it }) {
+            useCurrentLocation()
+        } else {
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,71 +47,93 @@ class LocationActivity : AppCompatActivity() {
             insets
         }
 
+        locationPrefs = LocationPrefs(this@LocationActivity)
 
         binding.appbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
 
         lifecycleScope.launch {
-            val cities = withContext(Dispatchers.IO) {
-                val json = assets.open("cities.json")
-                    .bufferedReader()
-                    .use { it.readText() }
+            withContext(Dispatchers.IO) {
+                CitiesRepository.ensureLoaded(this@LocationActivity)
+            }
+            setupSearch()
+        }
 
-                JSONArray(json)
+        binding.btnUseCurrent.setOnClickListener {
+            if (DeviceLocationProvider.hasPermission(this)) {
+                useCurrentLocation()
+            } else {
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
+        }
+
+    }
+
+    fun setupSearch() {
+        binding.searchInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId != EditorInfo.IME_ACTION_SEARCH) return@setOnEditorActionListener false
+
+            androidx.core.view.WindowCompat.getInsetsController(window, binding.searchInput)
+                .hide(WindowInsetsCompat.Type.ime())
+
+            val query = binding.searchInput.text.toString().trim()
+            val city = CitiesRepository.findCityByName(query)
+
+            if (city != null) {
+                locationPrefs.save(city.lat, city.lng, city.label, LocationPrefs.Source.MANUAL)
+                Toast.makeText(
+                    binding.root.context, "${city.label} selected", Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            } else {
+                Toast.makeText(
+                    binding.root.context, "No city found", Toast.LENGTH_SHORT
+                ).show()
             }
 
-            binding.searchInput.setOnEditorActionListener { _, actionId, _ ->
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            true
+        }
+    }
 
-                    androidx.core.view.WindowCompat.getInsetsController(window, binding.searchInput)
-                        .hide(WindowInsetsCompat.Type.ime())
+    private fun useCurrentLocation() {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                DeviceLocationProvider.getCurrentLocation(this@LocationActivity)
+            }
 
-                    val searchBoxTxtLowerCase = binding.searchInput.text
-                        .toString()
-                        .trim()
-                        .lowercase()
-
-                    var left = 0
-                    var right = cities.length() - 1
-                    var foundIndex = -1
-
-                    while (left <= right) {
-                        val mid = left + (right - left) / 2
-                        val cityName = cities.getJSONArray(mid).getString(0)
-
-                        val comparison = cityName.compareTo(searchBoxTxtLowerCase)
-
-                        when {
-                            comparison == 0 -> {
-                                foundIndex = mid
-                                break
-                            }
-
-                            comparison < 0 -> left = mid + 1
-                            else -> right = mid - 1
-                        }
+            when (result) {
+                is DeviceLocationResult.Success -> {
+                    val label = withContext(Dispatchers.IO) {
+                        CitiesRepository.ensureLoaded(this@LocationActivity)
+                        CitiesRepository.nearestCity(result.lat, result.lng)?.label
                     }
-
-                    val message = if (foundIndex != -1) {
-                        val city = cities.getJSONArray(foundIndex)
-                        val lat = city.getDouble(1)
-                        val lng = city.getDouble(2)
-                        "Latitude: $lat\nLongitude: $lng"
-                    } else {
-                        "No city found"
-                    }
-
+                    locationPrefs.save(
+                        result.lat,
+                        result.lng,
+                        label ?: "Unknown City",
+                        LocationPrefs.Source.GPS
+                    )
                     Toast.makeText(
-                        binding.root.context,
-                        message,
-                        Toast.LENGTH_LONG
+                        this@LocationActivity, "Location updated", Toast.LENGTH_SHORT
                     ).show()
-
-                    true
-                } else {
-                    false
+                    finish()   // back to Home → onResume re-binds the row
                 }
+
+                DeviceLocationResult.PermissionDenied -> Toast.makeText(
+                    this@LocationActivity, "Permission denied", Toast.LENGTH_SHORT
+                ).show()
+
+                DeviceLocationResult.Unavailable -> Toast.makeText(
+                    this@LocationActivity,
+                    "Couldn't get location. Check GPS is on.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

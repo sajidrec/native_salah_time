@@ -6,4 +6,10 @@
     <string name="use_current_location">Use current location</string>
     <string name="or">or</string>
     <string name="search_city_by_name">Search city by name</string>
+    <string name="locating">Finding your location…</string>
+    <string name="permission_rationale">Salah Time needs your location to calculate accurate prayer times for your area.</string>
+    <string name="permission_denied">Location permission denied. You can still pick a city manually.</string>
+    <string name="location_updated">Location updated</string>
+    <string name="location_unavailable">Couldn\'t get your location. Please pick a city.</string>
+    <string name="current_location">Current location</string>
 </resources>

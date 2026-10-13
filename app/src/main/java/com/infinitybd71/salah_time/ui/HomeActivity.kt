@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.infinitybd71.salah_time.R
+import com.infinitybd71.salah_time.data.LocationPrefs
 import com.infinitybd71.salah_time.databinding.ActivityHomeBinding
 import com.infinitybd71.salah_time.ui.components.setup
 import java.text.SimpleDateFormat
@@ -17,10 +18,13 @@ import java.util.Locale
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
+    private lateinit var locationPrefs: LocationPrefs
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        locationPrefs = LocationPrefs(this@HomeActivity)
 
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -30,11 +34,6 @@ class HomeActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        binding.locationRow.setup(
-            icon = "location_on",
-            title = "Dhaka, Bangladesh"
-        )
 
         binding.dateRow.setup(
             icon = "calendar_today",
@@ -95,4 +94,28 @@ class HomeActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        bindLocation()
+    }
+
+    private fun bindLocation() {
+        val label = when {
+            locationPrefs.isSet && !locationPrefs.label.isNullOrBlank() ->
+                locationPrefs.label
+
+            locationPrefs.isSet ->
+                "Lat ${"%.4f".format(locationPrefs.lat)}, " +
+                        "Lng ${"%.4f".format(locationPrefs.lng)}"
+
+            else -> "Set your location"
+        }
+        binding.locationRow.setup(
+            icon = "location_on",
+            title = label ?: ""
+        )
+    }
+
+
 }
