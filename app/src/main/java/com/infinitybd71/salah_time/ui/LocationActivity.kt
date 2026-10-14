@@ -12,10 +12,10 @@ import androidx.core.view.WindowInsetsCompat
 import com.infinitybd71.salah_time.R
 import com.infinitybd71.salah_time.databinding.ActivityLocationBinding
 import androidx.lifecycle.lifecycleScope
-import com.infinitybd71.salah_time.data.CitiesRepository
 import com.infinitybd71.salah_time.data.DeviceLocationProvider
 import com.infinitybd71.salah_time.data.DeviceLocationResult
 import com.infinitybd71.salah_time.data.LocationPrefs
+import com.infinitybd71.salah_time.data.repository.CitiesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -11,7 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.infinitybd71.salah_time.R
-import com.infinitybd71.salah_time.data.CitiesRepository
+import com.infinitybd71.salah_time.data.repository.CitiesRepository
 import com.infinitybd71.salah_time.data.DeviceLocationProvider
 import com.infinitybd71.salah_time.data.DeviceLocationResult
 import com.infinitybd71.salah_time.data.LocationPrefs
