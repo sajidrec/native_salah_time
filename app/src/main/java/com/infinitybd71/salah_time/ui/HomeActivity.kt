@@ -5,7 +5,6 @@ import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -31,6 +30,9 @@ class HomeActivity : AppCompatActivity() {
     private val selectedDate = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("EEEE, dd MMMM", Locale.ENGLISH)
     private val apiDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH) // Aladhan format
+
+    /** True once at least one fetch has succeeded, so we know whether stale times are on screen. */
+    private var hasLoadedData = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +79,10 @@ class HomeActivity : AppCompatActivity() {
         binding.btnRefresh.setOnClickListener {
             loadPrayerTimes()
         }
+
+        binding.btnRetry.setOnClickListener {
+            loadPrayerTimes()
+        }
     }
 
     override fun onResume() {
@@ -107,22 +113,35 @@ class HomeActivity : AppCompatActivity() {
         val lng = if (locationPrefs.isSet) locationPrefs.lng else 90.4125
         val date = apiDateFormat.format(selectedDate.time)   // Aladhan expects dd-MM-yyyy
 
+        hideFetchErrorBanner()
         setLoading(true)
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitInstance.api.getPrayerTimes(date, lat, lng)
                 }
+                hasLoadedData = true
                 bindPrayerTimes(response.data.timings)
+                hideFetchErrorBanner()
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(
-                    this@HomeActivity, "Couldn't load prayer times", Toast.LENGTH_SHORT
-                ).show()
+                showFetchErrorBanner()
             } finally {
                 setLoading(false)
             }
         }
+    }
+
+    /** Shows a persistent banner explaining that the last fetch failed, until the next attempt. */
+    private fun showFetchErrorBanner() {
+        binding.bannerMessage.setText(
+            if (hasLoadedData) R.string.fetch_failed_stale else R.string.fetch_failed_first
+        )
+        binding.fetchErrorBanner.visibility = View.VISIBLE
+    }
+
+    private fun hideFetchErrorBanner() {
+        binding.fetchErrorBanner.visibility = View.GONE
     }
 
     private fun setLoading(loading: Boolean) {

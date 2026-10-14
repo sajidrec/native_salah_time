@@ -13,4 +13,7 @@
     <string name="location_updated">Location updated</string>
     <string name="location_unavailable">Couldn\'t get your location. Please pick a city.</string>
     <string name="current_location">Current location</string>
+    <string name="retry">Retry</string>
+    <string name="fetch_failed_first">Couldn\'t load prayer times. Check your internet connection and tap Retry.</string>
+    <string name="fetch_failed_stale">Couldn\'t refresh prayer times. Showing the last loaded times.</string>
 </resources>
