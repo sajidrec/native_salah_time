@@ -162,7 +162,7 @@ class HomeActivity : AppCompatActivity() {
             "Dhuhr" to dhuhr,
             "Asr" to asr,
             "Magrib" to maghrib,
-            "Esha" to isha
+            "Isha" to isha
         )
 
         val next = nextPrayer(prayers)
@@ -171,7 +171,7 @@ class HomeActivity : AppCompatActivity() {
         binding.dhuhr.setup(name = "Dhuhr", time = dhuhr, isNext = next?.first == "Dhuhr")
         binding.asr.setup(name = "Asr", time = asr, isNext = next?.first == "Asr")
         binding.magrib.setup(name = "Magrib", time = maghrib, isNext = next?.first == "Magrib")
-        binding.isha.setup(name = "Esha", time = isha, isNext = next?.first == "Esha")
+        binding.isha.setup(name = "Isha", time = isha, isNext = next?.first == "Isha")
 
         binding.nextPrayerName.text = next?.first ?: "--"
         binding.nextPrayerTime.text = next?.second ?: "--"
