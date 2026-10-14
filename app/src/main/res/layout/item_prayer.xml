@@ -35,7 +35,7 @@
                 android:id="@+id/next_salah"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/next"
+                android:text="@string/next_salah"
                 android:textAllCaps="true"
                 android:textColor="@color/white"
                 android:textFontWeight="500"

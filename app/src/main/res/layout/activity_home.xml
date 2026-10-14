@@ -17,26 +17,50 @@
         android:padding="@dimen/screen_padding"
         app:title="@string/salah_time">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_setting"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:contentDescription="@string/settings"
-            android:fontFamily="@font/material_icon"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:text="settings"
-            android:textAllCaps="false"
-            android:textColor="@color/black"
-            android:textSize="@dimen/icon_default" />
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_refresh"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/refresh"
+                android:fontFamily="@font/material_icon"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="refresh"
+                android:textAllCaps="false"
+                android:textColor="@color/black"
+                android:textSize="@dimen/icon_default" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_setting"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/settings"
+                android:fontFamily="@font/material_icon"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="settings"
+                android:textAllCaps="false"
+                android:textColor="@color/black"
+                android:textSize="@dimen/icon_default" />
+
+        </LinearLayout>
 
     </com.google.android.material.appbar.MaterialToolbar>
 
     <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/appbar">
@@ -85,6 +109,7 @@
                     android:textSize="@dimen/text_body" />
 
                 <TextView
+                    android:id="@+id/next_prayer_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Dhuhr"
@@ -94,6 +119,7 @@
                     android:textSize="@dimen/text_prayer_name" />
 
                 <TextView
+                    android:id="@+id/next_prayer_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="11:11 AM"
@@ -133,7 +159,7 @@
                 layout="@layout/item_prayer" />
 
             <include
-                android:id="@+id/esha"
+                android:id="@+id/isha"
                 layout="@layout/item_prayer" />
 
             <Space
@@ -143,4 +169,13 @@
         </LinearLayout>
 
     </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
 </RelativeLayout>

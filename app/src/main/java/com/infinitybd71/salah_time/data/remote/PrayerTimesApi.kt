@@ -10,7 +10,9 @@ interface PrayerTimesApi {
     suspend fun getPrayerTimes(
         @Path("date") date: String,
         @Query("latitude") latitude: Double,
-        @Query("longitude") longitude: Double
+        @Query("longitude") longitude: Double,
+        // Aladhan school: 0 = Standard (Shafi), 1 = Hanafi (Asr at shadow factor 2)
+        @Query("school") school: Int = 1
     ): PrayerResponseModel
 
 }

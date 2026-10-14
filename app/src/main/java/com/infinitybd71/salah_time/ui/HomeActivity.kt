@@ -4,7 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.infinitybd71.salah_time.R
 import com.infinitybd71.salah_time.data.LocationPrefs
 import com.infinitybd71.salah_time.data.remote.RetrofitInstance
+import com.infinitybd71.salah_time.data.remote.model.Timings
 import com.infinitybd71.salah_time.databinding.ActivityHomeBinding
 import com.infinitybd71.salah_time.ui.components.setup
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,10 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var locationPrefs: LocationPrefs
+
+    private val selectedDate = Calendar.getInstance()
+    private val dateFormat = SimpleDateFormat("EEEE, dd MMMM", Locale.ENGLISH)
+    private val apiDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH) // Aladhan format
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,52 +48,10 @@ class HomeActivity : AppCompatActivity() {
         }
 
         binding.dateRow.setup(
-            icon = "calendar_today", title = "Wednesday, 07 October", subtitle = "2026"
+            icon = "calendar_today",
+            title = dateFormat.format(selectedDate.time),
+            subtitle = selectedDate.get(Calendar.YEAR).toString()
         )
-
-        binding.fajr.setup(
-            name = "Fajr", time = "4:38 AM", isNext = true
-        )
-        binding.dhuhr.setup(
-            name = "Dhuhr", time = "11:11 AM", isNext = false
-        )
-        binding.asr.setup(
-            name = "Asr", time = "4:38 AM", isNext = false
-        )
-        binding.magrib.setup(
-            name = "Magrib", time = "4:38 AM", isNext = false
-        )
-        binding.esha.setup(
-            name = "Esha", time = "4:38 AM", isNext = false
-        )
-
-        val selectedDate = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat("EEEE, dd MMMM", Locale.ENGLISH)
-
-        fun loadPrayerTimes() {
-            val lat = if (locationPrefs.isSet) locationPrefs.lat else 23.8103   // Dhaka fallback
-            val lng = if (locationPrefs.isSet) locationPrefs.lng else 90.4125
-            lifecycleScope.launch {
-                try {
-                    val response = withContext(Dispatchers.IO) {
-                        RetrofitInstance.api.getPrayerTimes(
-                            selectedDate.time.toString(), lat, lng
-                        )
-                    }
-                    Log.d("testing", "sajid testing ${response.data.timings}")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(
-                        this@HomeActivity, "Couldn't load prayer times", Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-
-        loadPrayerTimes()
-
-        binding.dateRow.title.text = dateFormat.format(selectedDate.time)
-        binding.dateRow.subtitle.text = selectedDate.get(Calendar.YEAR).toString()
 
         binding.dateRow.fullRowId.setOnClickListener {
             DatePickerDialog(
@@ -98,6 +61,7 @@ class HomeActivity : AppCompatActivity() {
 
                     binding.dateRow.title.text = dateFormat.format(selectedDate.time)
                     binding.dateRow.subtitle.text = year.toString()
+                    loadPrayerTimes()
                 },
                 selectedDate.get(Calendar.YEAR),
                 selectedDate.get(Calendar.MONTH),
@@ -109,11 +73,16 @@ class HomeActivity : AppCompatActivity() {
             val intent = Intent(this@HomeActivity, LocationActivity::class.java)
             startActivity(intent)
         }
+
+        binding.btnRefresh.setOnClickListener {
+            loadPrayerTimes()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         bindLocation()
+        loadPrayerTimes()
     }
 
     private fun bindLocation() {
@@ -131,6 +100,81 @@ class HomeActivity : AppCompatActivity() {
         binding.locationRow.setup(
             icon = "location_on", title = label ?: ""
         )
+    }
+
+    private fun loadPrayerTimes() {
+        val lat = if (locationPrefs.isSet) locationPrefs.lat else 23.8103   // Dhaka fallback
+        val lng = if (locationPrefs.isSet) locationPrefs.lng else 90.4125
+        val date = apiDateFormat.format(selectedDate.time)   // Aladhan expects dd-MM-yyyy
+
+        setLoading(true)
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitInstance.api.getPrayerTimes(date, lat, lng)
+                }
+                bindPrayerTimes(response.data.timings)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(
+                    this@HomeActivity, "Couldn't load prayer times", Toast.LENGTH_SHORT
+                ).show()
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    private fun setLoading(loading: Boolean) {
+        binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        binding.scrollView.visibility = if (loading) View.GONE else View.VISIBLE
+        binding.btnRefresh.isEnabled = !loading
+    }
+
+    private fun bindPrayerTimes(t: Timings) {
+        val fajr = t.Fajr.substringBefore(" ").trim()       // "05:42 (BST)" -> "05:42"
+        val dhuhr = t.Dhuhr.substringBefore(" ").trim()
+        val asr = t.Asr.substringBefore(" ").trim()
+        val maghrib = t.Maghrib.substringBefore(" ").trim()
+        val isha = t.Isha.substringBefore(" ").trim()
+
+        val prayers = listOf(
+            "Fajr" to fajr,
+            "Dhuhr" to dhuhr,
+            "Asr" to asr,
+            "Magrib" to maghrib,
+            "Esha" to isha
+        )
+
+        val next = nextPrayer(prayers)
+
+        binding.fajr.setup(name = "Fajr", time = fajr, isNext = next?.first == "Fajr")
+        binding.dhuhr.setup(name = "Dhuhr", time = dhuhr, isNext = next?.first == "Dhuhr")
+        binding.asr.setup(name = "Asr", time = asr, isNext = next?.first == "Asr")
+        binding.magrib.setup(name = "Magrib", time = maghrib, isNext = next?.first == "Magrib")
+        binding.isha.setup(name = "Esha", time = isha, isNext = next?.first == "Esha")
+
+        binding.nextPrayerName.text = next?.first ?: "--"
+        binding.nextPrayerTime.text = next?.second ?: "--"
+    }
+
+    /** First prayer later than the current clock time; wraps to Fajr (tomorrow) if all have passed. */
+    private fun nextPrayer(prayers: List<Pair<String, String>>): Pair<String, String>? {
+        val now = Calendar.getInstance()
+        val nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+
+        return prayers.firstOrNull { (_, time) ->
+            val minutes = toMinutes(time)
+            minutes != null && minutes > nowMinutes
+        } ?: prayers.firstOrNull()
+    }
+
+    private fun toMinutes(time: String): Int? {
+        val parts = time.split(":")
+        if (parts.size != 2) return null
+        val hour = parts[0].trim().toIntOrNull() ?: return null
+        val minute = parts[1].trim().toIntOrNull() ?: return null
+        return if (hour in 0..23 && minute in 0..59) hour * 60 + minute else null
     }
 
 }
