@@ -16,6 +16,7 @@ import com.infinitybd71.salah_time.data.remote.RetrofitInstance
 import com.infinitybd71.salah_time.data.remote.model.Timings
 import com.infinitybd71.salah_time.databinding.ActivityHomeBinding
 import com.infinitybd71.salah_time.ui.components.setup
+import com.infinitybd71.salah_time.utils.formatPrayerTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -174,7 +175,7 @@ class HomeActivity : AppCompatActivity() {
         binding.isha.setup(name = "Isha", time = isha, isNext = next?.first == "Isha")
 
         binding.nextPrayerName.text = next?.first ?: "--"
-        binding.nextPrayerTime.text = next?.second ?: "--"
+        binding.nextPrayerTime.text = formatPrayerTime(next?.second ?: "--")
     }
 
     /** First prayer later than the current clock time; wraps to Fajr (tomorrow) if all have passed. */
