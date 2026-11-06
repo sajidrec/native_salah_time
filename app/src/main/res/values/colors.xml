@@ -3,6 +3,8 @@
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 
+    <color name="launcher_background">#FFFFFF</color>
+
     <!-- Brand -->
     <color name="primary">#176B50</color>
     <color name="on_primary">#FFFFFF</color>
