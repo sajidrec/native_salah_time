@@ -38,23 +38,6 @@
                 android:textAllCaps="false"
                 android:textColor="@color/black"
                 android:textSize="@dimen/icon_default" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_setting"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/settings"
-                android:fontFamily="@font/material_icon"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="settings"
-                android:textAllCaps="false"
-                android:textColor="@color/black"
-                android:textSize="@dimen/icon_default" />
-
         </LinearLayout>
 
     </com.google.android.material.appbar.MaterialToolbar>
@@ -184,7 +167,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Today's Prayer"
+                android:text="Prayer Time Schedule"
                 android:textFontWeight="500" />
 
             <View

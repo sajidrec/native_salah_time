@@ -1,12 +1,21 @@
 package com.infinitybd71.salah_time.ui
 
+import android.app.AlarmManager
 import android.app.DatePickerDialog
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.Manifest
 import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +25,9 @@ import com.infinitybd71.salah_time.data.remote.RetrofitInstance
 import com.infinitybd71.salah_time.data.remote.model.Timings
 import com.infinitybd71.salah_time.databinding.ActivityHomeBinding
 import com.infinitybd71.salah_time.ui.components.setup
+import com.infinitybd71.salah_time.utils.AlarmReceiver
+import com.infinitybd71.salah_time.utils.AlarmService
+import com.infinitybd71.salah_time.utils.AlarmPrefs
 import com.infinitybd71.salah_time.utils.formatPrayerTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,6 +39,7 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var locationPrefs: LocationPrefs
+    private lateinit var alarmPrefs: AlarmPrefs
 
     private val selectedDate = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("EEEE, dd MMMM", Locale.ENGLISH)
@@ -35,11 +48,31 @@ class HomeActivity : AppCompatActivity() {
     /** True once at least one fetch has succeeded, so we know whether stale times are on screen. */
     private var hasLoadedData = false
 
+    /** Launcher for POST_NOTIFICATIONS runtime permission (Android 13+). */
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            Toast.makeText(
+                this,
+                "Notification permission is required to receive prayer alarms",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Stop any active alarm when app is opened
+        val stopIntent = Intent(this, AlarmService::class.java).apply {
+            action = AlarmService.ACTION_STOP_ALARM
+        }
+        stopService(stopIntent)
+
         locationPrefs = LocationPrefs(this@HomeActivity)
+        alarmPrefs = AlarmPrefs(this@HomeActivity)
 
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -168,14 +201,55 @@ class HomeActivity : AppCompatActivity() {
 
         val next = nextPrayer(prayers)
 
-        binding.fajr.setup(name = "Fajr", time = fajr, isNext = next?.first == "Fajr")
-        binding.dhuhr.setup(name = "Dhuhr", time = dhuhr, isNext = next?.first == "Dhuhr")
-        binding.asr.setup(name = "Asr", time = asr, isNext = next?.first == "Asr")
-        binding.magrib.setup(name = "Magrib", time = maghrib, isNext = next?.first == "Magrib")
-        binding.isha.setup(name = "Isha", time = isha, isNext = next?.first == "Isha")
+        binding.fajr.setup(
+            name = "Fajr",
+            time = fajr,
+            isNext = next?.first == "Fajr",
+            isAlarmSet = alarmPrefs.isSet("Fajr")
+        )
+        binding.dhuhr.setup(
+            name = "Dhuhr",
+            time = dhuhr,
+            isNext = next?.first == "Dhuhr",
+            isAlarmSet = alarmPrefs.isSet("Dhuhr")
+        )
+        binding.asr.setup(
+            name = "Asr",
+            time = asr,
+            isNext = next?.first == "Asr",
+            isAlarmSet = alarmPrefs.isSet("Asr")
+        )
+        binding.magrib.setup(
+            name = "Magrib",
+            time = maghrib,
+            isNext = next?.first == "Magrib",
+            isAlarmSet = alarmPrefs.isSet("Magrib")
+        )
+        binding.isha.setup(
+            name = "Isha",
+            time = isha,
+            isNext = next?.first == "Isha",
+            isAlarmSet = alarmPrefs.isSet("Isha")
+        )
 
         binding.nextPrayerName.text = next?.first ?: "--"
         binding.nextPrayerTime.text = formatPrayerTime(next?.second ?: "--")
+
+        binding.fajr.notificationBtn.setOnClickListener {
+            togglePrayerAlarm("Fajr", fajr, binding.fajr.notificationBtn)
+        }
+        binding.dhuhr.notificationBtn.setOnClickListener {
+            togglePrayerAlarm("Dhuhr", dhuhr, binding.dhuhr.notificationBtn)
+        }
+        binding.asr.notificationBtn.setOnClickListener {
+            togglePrayerAlarm("Asr", asr, binding.asr.notificationBtn)
+        }
+        binding.magrib.notificationBtn.setOnClickListener {
+            togglePrayerAlarm("Magrib", maghrib, binding.magrib.notificationBtn)
+        }
+        binding.isha.notificationBtn.setOnClickListener {
+            togglePrayerAlarm("Isha", isha, binding.isha.notificationBtn)
+        }
     }
 
     /** First prayer later than the current clock time; wraps to Fajr (tomorrow) if all have passed. */
@@ -197,4 +271,139 @@ class HomeActivity : AppCompatActivity() {
         return if (hour in 0..23 && minute in 0..59) hour * 60 + minute else null
     }
 
+    private fun togglePrayerAlarm(
+        prayerName: String,
+        timeString: String,
+        bellBtn: com.google.android.material.button.MaterialButton
+    ) {
+        if (alarmPrefs.isSet(prayerName)) {
+            cancelPrayerAlarm(prayerName)
+            alarmPrefs.set(prayerName, false)
+            alarmPrefs.setTime(prayerName, null)
+            bellBtn.text = "notifications"
+            Toast.makeText(this, "$prayerName alarm cancelled", Toast.LENGTH_SHORT).show()
+        } else {
+            schedulePrayerAlarm(prayerName, timeString, bellBtn)
+        }
+    }
+
+    private fun schedulePrayerAlarm(
+        prayerName: String,
+        timeString: String,
+        bellBtn: com.google.android.material.button.MaterialButton
+    ) {
+        // Check notification permission (Android 13+)
+        if (!canPostNotifications()) {
+            requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            return
+        }
+
+        // Check exact alarm permission (Android 12+)
+        if (!canScheduleExactAlarms()) {
+            requestExactAlarmPermission()
+            return
+        }
+
+        val parts = timeString.split(":")
+        if (parts.size < 2) {
+            Toast.makeText(this, "Invalid time format", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val hour = parts[0].trim().toIntOrNull() ?: return
+        val minute = parts[1].trim().toIntOrNull() ?: return
+
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
+        calendar.set(Calendar.MINUTE, minute)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
+        // If time already passed today, schedule for tomorrow
+        if (calendar.timeInMillis <= System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        val intent = Intent(this, AlarmReceiver::class.java).apply {
+            putExtra(AlarmReceiver.EXTRA_PRAYER_NAME, prayerName)
+            putExtra(AlarmReceiver.EXTRA_PRAYER_TIME, timeString)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            AlarmReceiver.getRequestCode(prayerName),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            }
+            alarmPrefs.set(prayerName, true)
+            alarmPrefs.setTime(prayerName, timeString)
+            bellBtn.text = "notifications_active"
+            Toast.makeText(
+                this,
+                "$prayerName alarm set for $timeString",
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            Log.e("Alarm", "Unable to schedule alarm", e)
+            Toast.makeText(this, "Failed to schedule alarm", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun cancelPrayerAlarm(prayerName: String) {
+        val intent = Intent(this, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            AlarmReceiver.getRequestCode(prayerName),
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+    }
+
+    private fun canScheduleExactAlarms(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.canScheduleExactAlarms()
+        } else {
+            true
+        }
+    }
+
+    private fun canPostNotifications(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    private fun requestExactAlarmPermission() {
+        val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+        intent.setPackage(packageName)
+        startActivity(intent)
+    }
 }
