@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import com.infinitybd71.salah_time.utils.ToastUtils
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -35,11 +36,11 @@ class SplashActivity : AppCompatActivity() {
         if (anyGranted) {
             fetchLocationAndContinue()
         } else {
-            Toast.makeText(
+            ToastUtils.show(
                 this,
                 "Location permission denied. You can pick a city manually.",
                 Toast.LENGTH_LONG
-            ).show()
+            )
             goToHome()
         }
     }
@@ -112,11 +113,11 @@ class SplashActivity : AppCompatActivity() {
                     DeviceLocationResult.PermissionDenied -> goToHome()
 
                     DeviceLocationResult.Unavailable -> {
-                        Toast.makeText(
+                        ToastUtils.show(
                             this@SplashActivity,
                             "Couldn't get your location. Please pick a city.",
                             Toast.LENGTH_LONG
-                        ).show()
+                        )
                         goToHome()
                     }
                 }

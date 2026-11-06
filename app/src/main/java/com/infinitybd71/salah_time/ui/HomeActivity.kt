@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.infinitybd71.salah_time.utils.ToastUtils
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -53,11 +54,11 @@ class HomeActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (!granted) {
-            Toast.makeText(
+            ToastUtils.show(
                 this,
                 "Notification permission is required to receive prayer alarms",
                 Toast.LENGTH_LONG
-            ).show()
+            )
         }
     }
 
@@ -281,7 +282,7 @@ class HomeActivity : AppCompatActivity() {
             alarmPrefs.set(prayerName, false)
             alarmPrefs.setTime(prayerName, null)
             bellBtn.text = "notifications"
-            Toast.makeText(this, "$prayerName alarm cancelled", Toast.LENGTH_SHORT).show()
+            ToastUtils.show(this, "$prayerName alarm cancelled")
         } else {
             schedulePrayerAlarm(prayerName, timeString, bellBtn)
         }
@@ -306,7 +307,7 @@ class HomeActivity : AppCompatActivity() {
 
         val parts = timeString.split(":")
         if (parts.size < 2) {
-            Toast.makeText(this, "Invalid time format", Toast.LENGTH_SHORT).show()
+            ToastUtils.show(this, "Invalid time format")
             return
         }
 
@@ -354,14 +355,10 @@ class HomeActivity : AppCompatActivity() {
             alarmPrefs.set(prayerName, true)
             alarmPrefs.setTime(prayerName, timeString)
             bellBtn.text = "notifications_active"
-            Toast.makeText(
-                this,
-                "$prayerName alarm set for $timeString",
-                Toast.LENGTH_SHORT
-            ).show()
+            ToastUtils.show(this, "$prayerName alarm set for $timeString")
         } catch (e: Exception) {
             Log.e("Alarm", "Unable to schedule alarm", e)
-            Toast.makeText(this, "Failed to schedule alarm", Toast.LENGTH_SHORT).show()
+            ToastUtils.show(this, "Failed to schedule alarm")
         }
     }
 

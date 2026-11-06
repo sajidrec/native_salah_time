@@ -3,7 +3,7 @@ package com.infinitybd71.salah_time.ui
 import android.Manifest
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
+import com.infinitybd71.salah_time.utils.ToastUtils
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -31,7 +31,7 @@ class LocationActivity : AppCompatActivity() {
         if (grants.values.any { it }) {
             useCurrentLocation()
         } else {
-            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+            ToastUtils.show(this, "Permission denied")
         }
     }
 
@@ -87,14 +87,10 @@ class LocationActivity : AppCompatActivity() {
 
             if (city != null) {
                 locationPrefs.save(city.lat, city.lng, city.label, LocationPrefs.Source.MANUAL)
-                Toast.makeText(
-                    binding.root.context, "${city.label} selected", Toast.LENGTH_SHORT
-                ).show()
+                ToastUtils.show(binding.root.context, "${city.label} selected")
                 finish()
             } else {
-                Toast.makeText(
-                    binding.root.context, "No city found", Toast.LENGTH_SHORT
-                ).show()
+                ToastUtils.show(binding.root.context, "No city found")
             }
 
             true
@@ -119,21 +115,13 @@ class LocationActivity : AppCompatActivity() {
                         label ?: "Unknown City",
                         LocationPrefs.Source.GPS
                     )
-                    Toast.makeText(
-                        this@LocationActivity, "Location updated", Toast.LENGTH_SHORT
-                    ).show()
+                    ToastUtils.show(this@LocationActivity, "Location updated")
                     finish()   // back to Home → onResume re-binds the row
                 }
 
-                DeviceLocationResult.PermissionDenied -> Toast.makeText(
-                    this@LocationActivity, "Permission denied", Toast.LENGTH_SHORT
-                ).show()
+                DeviceLocationResult.PermissionDenied -> ToastUtils.show(this@LocationActivity, "Permission denied")
 
-                DeviceLocationResult.Unavailable -> Toast.makeText(
-                    this@LocationActivity,
-                    "Couldn't get location. Check GPS is on.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                DeviceLocationResult.Unavailable -> ToastUtils.show(this@LocationActivity, "Couldn't get location. Check GPS is on.")
             }
         }
     }
